@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    container_name: go_balance_manager_db
+    environment:
+      POSTGRES_DB: golang_db
+      POSTGRES_USER: golang_user
+      POSTGRES_PASSWORD: golang_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "golang_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: go_balance_manager_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: golang_user
+      DB_PASS: golang_pass
+      DB_NAME: golang_db
+      APP_ADDR: ":8080"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./bin:/app/bin
+    command: ["./go-balance-manager", "-addr=:8080"]
+
+volumes:
+  db_data:
