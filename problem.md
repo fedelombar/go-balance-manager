@@ -4,6 +4,7 @@ The main goal of this test task is a develop the application for processing the 
 
 The application must have an HTTP URL to receive incoming `POST` requests.
 To receive the incoming POST requests the application must have an HTTP URL endpoint.
+
 Technologies: Golang + Postgres.
 
 ## Requirements
