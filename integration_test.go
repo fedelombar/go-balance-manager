@@ -17,8 +17,8 @@ import (
 var baseURL string
 
 func TestMain(m *testing.M) {
-	baseURL = "http://localhost:8081" // Updated port to match Docker mapping
-	time.Sleep(5 * time.Second)       // Wait for the application to initialize
+	baseURL = "http://localhost:8081"
+	time.Sleep(5 * time.Second) // Wait for the application to init
 
 	code := m.Run()
 
