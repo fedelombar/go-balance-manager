@@ -17,7 +17,7 @@ type Storage interface {
 }
 
 type PostgresStore struct {
-	db *sql.DB
+	Db *sql.DB
 }
 
 func NewPostgresStore(host string, port int, user, password, dbname string) (*PostgresStore, error) {
@@ -36,7 +36,7 @@ func NewPostgresStore(host string, port int, user, password, dbname string) (*Po
 	}
 
 	return &PostgresStore{
-		db: db,
+		Db: db,
 	}, nil
 }
 
@@ -52,7 +52,7 @@ func (s *PostgresStore) Init() error {
 }
 
 func (s *PostgresStore) Close() error {
-	return s.db.Close()
+	return s.Db.Close()
 }
 
 func (s *PostgresStore) createUsersTable() error {
@@ -62,7 +62,7 @@ func (s *PostgresStore) createUsersTable() error {
 		balance NUMERIC(12, 2) NOT NULL DEFAULT 0,
 		created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 	);`
-	_, err := s.db.Exec(query)
+	_, err := s.Db.Exec(query)
 	return err
 }
 
@@ -78,7 +78,7 @@ func (s *PostgresStore) createTransactionsTable() error {
 		created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
 		FOREIGN KEY (user_id) REFERENCES users(user_id)
 	);`
-	_, err := s.db.Exec(query)
+	_, err := s.Db.Exec(query)
 	return err
 }
 
@@ -86,7 +86,7 @@ func (s *PostgresStore) CreateTransaction(tx Transaction) error {
 	query := `
 	INSERT INTO transactions (transaction_id, user_id, state, amount, source_type, created_at)
 	VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err := s.db.Exec(query,
+	_, err := s.Db.Exec(query,
 		tx.TransactionID,
 		tx.UserID,
 		tx.State,
@@ -99,7 +99,7 @@ func (s *PostgresStore) CreateTransaction(tx Transaction) error {
 
 func (s *PostgresStore) GetUserBalance(userID uint64) (float64, error) {
 	var balance float64
-	err := s.db.QueryRow("SELECT balance FROM users WHERE user_id = $1", userID).Scan(&balance)
+	err := s.Db.QueryRow("SELECT balance FROM users WHERE user_id = $1", userID).Scan(&balance)
 	if err != nil {
 		return 0, err
 	}
@@ -110,7 +110,7 @@ func (s *PostgresStore) GetTransactionByID(transactionID string) (*Transaction, 
 	query := `
 	SELECT id, transaction_id, user_id, state, amount, source_type, created_at
 	FROM transactions WHERE transaction_id = $1`
-	row := s.db.QueryRow(query, transactionID)
+	row := s.Db.QueryRow(query, transactionID)
 
 	var tx Transaction
 	err := row.Scan(
@@ -130,8 +130,7 @@ func (s *PostgresStore) GetTransactionByID(transactionID string) (*Transaction, 
 
 // UpdateUserBalance updates the user's balance by a delta
 func (s *PostgresStore) UpdateUserBalance(userID uint64, delta float64) error {
-	// Use a transaction to ensure atomicity
-	tx, err := s.db.Begin()
+	tx, err := s.Db.Begin()
 	if err != nil {
 		return err
 	}
@@ -157,10 +156,9 @@ func (s *PostgresStore) UpdateUserBalance(userID uint64, delta float64) error {
 	return tx.Commit()
 }
 
-// EnsurePredefinedUsers creates users with IDs 1, 2, and 3 if they don't exist
 func (s *PostgresStore) EnsurePredefinedUsers() error {
 	for _, id := range []uint64{1, 2, 3} {
-		_, err := s.db.Exec(`
+		_, err := s.Db.Exec(`
 			INSERT INTO users (user_id, balance)
 			VALUES ($1, 0)
 			ON CONFLICT (user_id) DO NOTHING

@@ -1,19 +1,17 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:15
     container_name: go_balance_manager_db
     environment:
-      POSTGRES_DB: golang_db
-      POSTGRES_USER: golang_user
-      POSTGRES_PASSWORD: golang_pass
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Host:Container
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "golang_user"]
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -25,17 +23,17 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: golang_user
-      DB_PASS: golang_pass
-      DB_NAME: golang_db
-      APP_ADDR: ":8080"
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      APP_ADDR: "${APP_ADDR}"
+      SEED: "false" # Set to "true" to seed data on startup
     ports:
-      - "8080:8080"
+      - "8081:8080"  # Host:Container
     volumes:
       - ./bin:/app/bin
-    command: ["./go-balance-manager", "-addr=:8080"]
 
 volumes:
   db_data:

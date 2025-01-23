@@ -20,9 +20,12 @@ Your application should have 2 routes:
 The decision regarding database architecture, table structure and service architecture is made by you.
 
 The application should be prepared for running via docker containers.
+
 Best option will be running application via docker compose up -d without additional configuration.
-Please, be informed that application without description about how to run and test it won't be accepted and reviewed.
-Note: test task might be tested by automated tools.
+
+Description about how to run and test it.
+
+Might be tested by automated tools.
 
 ## User Id
 User id should be positive integer (`uint64`).

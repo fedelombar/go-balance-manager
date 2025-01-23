@@ -7,21 +7,19 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o bin/go-balance-manager
+RUN go build -o go-balance-manager
 
 FROM alpine:3.17
 
 WORKDIR /app
 
-COPY --from=builder /app/bin/go-balance-manager /app/go-balance-manager
+RUN apk add --no-cache postgresql-client
+
+COPY --from=builder /app/go-balance-manager /app/go-balance-manager
+
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
 
-ENV DB_HOST=db
-ENV DB_PORT=5432
-ENV DB_USER=golang_user
-ENV DB_PASS=golang_pass
-ENV DB_NAME=golang_db
-ENV APP_ADDR=:8080
-
-CMD ["./go-balance-manager", "-addr=:8080"]
+ENTRYPOINT ["/app/entrypoint.sh"]
